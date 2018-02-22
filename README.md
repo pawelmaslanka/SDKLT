@@ -51,3 +51,6 @@ The limited open source software is licensed under the Broadcom Switch Software 
 
 The applicable license will be identified at the beginning of the software file.
 SDKLT uses some third-party externally licensed components which are listed [here](https://github.com/Broadcom-Network-Switching-Software/SDKLT/wiki/Third-Party-Software-Licenses).
+
+As of today, SDKLT API definitions are released under the Apache 2.0 license. All other files in this repository are released under the Broadcom Switch Software License.
+
