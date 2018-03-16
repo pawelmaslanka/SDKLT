@@ -282,7 +282,8 @@ bcmpc_lth_port_status_first(int unit,
 {
     bcmltd_fields_t flds;
     bcmltd_field_t *flist, fld;
-    uint64_t min, max;
+    uint64_t lport, min, max;
+    int rv;
 
     SHR_FUNC_ENTER(unit);
 
@@ -290,14 +291,22 @@ bcmpc_lth_port_status_first(int unit,
         (bcmpc_lth_field_value_range_get(unit, LTH_SID,
                                          PC_PORT_STATUSt_PORT_IDf,
                                          &min, &max));
-    flist = &fld;
-    flds.field = &flist;
-    flds.field[0]->id = PC_PORT_STATUSt_PORT_IDf;
-    flds.field[0]->data = min;
-    flds.count = 1;
 
-    SHR_IF_ERR_VERBOSE_EXIT
-        (bcmpc_lth_port_status_lookup(unit, trans_id, &flds, out, arg));
+    lport = min;
+    while (lport <= max) {
+        flist = &fld;
+        flds.field = &flist;
+        flds.field[0]->id = PC_PORT_STATUSt_PORT_IDf;
+        flds.field[0]->data = lport;
+        flds.count = 1;
+        rv = bcmpc_lth_port_status_lookup(unit, trans_id, &flds, out, arg);
+        if (SHR_SUCCESS(rv)) {
+            SHR_RETURN_VAL_EXIT(SHR_E_NONE);
+        }
+        lport++;
+    }
+
+    SHR_RETURN_VAL_EXIT(SHR_E_NOT_FOUND);
 
 exit:
     SHR_FUNC_EXIT();
