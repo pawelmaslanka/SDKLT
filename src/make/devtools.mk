@@ -95,6 +95,6 @@ include $(SDK)/make/pedantic.mk
 # Standard documentation targets
 include $(SDK)/make/doc.mk
 
-# Coverity
-include $(SDK)/make/coverity.mk
+# Internal tools
+-include $(SDK)/INTERNAL/appl/make/devtools.mk
 
