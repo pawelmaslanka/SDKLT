@@ -39,9 +39,6 @@ Reference code and CLI scripts are contained in the examples directory.
 ## Logical Table Definitions
 Definitions of the Logical Tables device controls used on Tomahawk are provided [here](https://broadcom-network-switching-software.github.io/Logical_Table_Documentation_Guide/).  Click on the blue "Feature Categories" tab to see the main Logical Table groupings such as Port, VLAN, L2 or L3.  Select the L2 logical tables to view all the L2 tables supported by this device.  In order to view the specific L2 logical table controls, click on the table name (e.g. L2_MY_STATION).
 
-# Feedback or Questions
-Feedback or questions should be sent to sdklt-feedback.pdl@broadcom.com.
-
 # License and Legal Terms
 The software content in this repository is divided into two types, open source and limited open source, each with its own respective license.
 
