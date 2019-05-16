@@ -216,7 +216,11 @@ bcmcnet_rx_buff_get(struct pdma_rx_queue *rxq, struct pdma_rx_buf *pbuf, int len
             pbuf->dma = 0;
         } else {
             pbuf->page_offset ^= PDMA_RXB_SIZE_MAX;
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,6,0)
             atomic_inc(&pbuf->page->_count);
+#else
+            atomic_inc(&pbuf->page->_refcount);
+#endif /* KERNEL_VERSION(4,6,0) */
             dma_sync_single_range_for_device(dev->dev, pbuf->dma, pbuf->page_offset,
                                              PDMA_RXB_SIZE_MAX, DMA_FROM_DEVICE);
         }

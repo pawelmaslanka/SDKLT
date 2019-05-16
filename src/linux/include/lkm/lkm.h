@@ -123,7 +123,11 @@
 
 #include <asm/io.h>
 #include <asm/hardirq.h>
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,12,0)
 #include <asm/uaccess.h>
+#else
+#include <linux/uaccess.h>
+#endif /* KERNEL_VERSION(4,12,0) */
 
 #ifdef CONFIG_DEVFS_FS
 #include <linux/devfs_fs_kernel.h>

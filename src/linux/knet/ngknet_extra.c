@@ -94,8 +94,13 @@
 #include <linux/string.h>
 #include <linux/errno.h>
 #include <linux/unistd.h>
+#include <linux/version.h>
 #include <asm/io.h>
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,12,0)
 #include <asm/uaccess.h>
+#else
+#include <linux/uaccess.h>
+#endif /* KERNEL_VERSION(4,12,0) */
 #include <linux/netdevice.h>
 #include <linux/etherdevice.h>
 #include <linux/skbuff.h>

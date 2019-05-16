@@ -131,8 +131,13 @@
 #include <linux/string.h>
 #include <linux/errno.h>
 #include <linux/unistd.h>
+#include <linux/version.h>
 #include <asm/io.h>
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,12,0)
 #include <asm/uaccess.h>
+#else
+#include <linux/uaccess.h>
+#endif /* KERNEL_VERSION(4,12,0) */
 #include <linux/module.h>
 #include <linux/netdevice.h>
 #include <linux/etherdevice.h>
@@ -927,7 +932,18 @@ ngknet_enet_open(struct net_device *ndev)
     }
 
     /* Prevent tx timeout */
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,7,0)
     ndev->trans_start = jiffies;
+#else
+    /* trans_start removed from struct netdev in 4.7 kernel, the
+       netif_trans_update method performs the same logic on tx queue 0.
+
+       TODO It appears that this invocation applies only to legacy
+            drivers. We should confirm that it is actually needed.
+            If not needed, then this else branch can be removed.
+     */
+    netif_trans_update(ndev);
+#endif /* KERNEL_VERSION(4,7,0) */
 
     netif_tx_wake_all_queues(ndev);
 
