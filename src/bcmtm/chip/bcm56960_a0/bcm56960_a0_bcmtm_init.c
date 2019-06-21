@@ -798,7 +798,7 @@ bcm56960_a0_bcmtm_chip_tm_init(int unit)
     }
     /* Initialize Shaper config. */
     SHR_IF_ERR_EXIT
-        (bcm56960_a0_tm_shaper_config_init(unit));
+        (bcm56960_a0_tm_scheduler_shaper_chip_init(unit));
 exit:
     SHR_FUNC_EXIT();
 }

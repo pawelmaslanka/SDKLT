@@ -680,7 +680,7 @@ bcmfp_bcm56960_a0_ingress_action_cfg_db_init(int unit,
     BCMFP_ACTION_CFG_ADD_FOUR(unit, stage, BCMFP_ACTION_REDIRECT_TO_PORT,
             0, BCMFP_ACTION_SET_REDIRECT,
             offset + 6, 8, -1, offset + 22 , 1, 0,
-            offset + 3, 3, 6, offset + 0, 3, 1);
+            offset + 3, 3, 0, offset + 0, 3, 1);
     BCMFP_ACTION_CFG_ADD_THREE(unit, stage, BCMFP_ACTION_REDIRECT_TO_DVP,
             0, BCMFP_ACTION_SET_REDIRECT,
             offset + 6, 14, -1,
