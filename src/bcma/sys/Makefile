@@ -93,7 +93,7 @@ ifndef SYSTEM_INTERFACE
 SYSTEM_INTERFACE = xgssim
 endif
 
-SUBDIRS := conf_examples conf probe/$(SYSTEM_INTERFACE)
+SUBDIRS := conf probe/$(SYSTEM_INTERFACE)
 include $(SDK)/make/subdir.mk
 
 include $(SDK)/make/lib.mk
