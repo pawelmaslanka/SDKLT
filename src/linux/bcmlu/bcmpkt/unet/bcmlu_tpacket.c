@@ -1639,7 +1639,7 @@ bcmlu_tpacket_setup(bcmlu_tpacket_t *tp)
     }
 
     sal_sprintf(name, "Bcmpkt_tp_rx_%s", tp->netif.name);
-    tp->rx_pid = sal_thread_create(name, 0x1000, -1, bcmlu_tpacket_rx_thread,
+    tp->rx_pid = sal_thread_create(name, SAL_THREAD_STKSZ, -1, bcmlu_tpacket_rx_thread,
                                    (void*)tp);
     if (tp->rx_pid == SAL_THREAD_ERROR) {
         SHR_IF_ERR_MSG_EXIT(SHR_E_RESOURCE,
@@ -1651,7 +1651,7 @@ bcmlu_tpacket_setup(bcmlu_tpacket_t *tp)
      */
     if (!tp->tx_immediate) {
         sal_sprintf(name, "Bcmpkt_tp_tx_%s", tp->netif.name);
-        tp->tx_pid = sal_thread_create(name, 0x1000, -1,
+        tp->tx_pid = sal_thread_create(name, SAL_THREAD_STKSZ, -1,
                                        bcmlu_tpacket_tx_thread, (void*)tp);
         if (tp->tx_pid == SAL_THREAD_ERROR) {
             SHR_IF_ERR_MSG_EXIT(SHR_E_RESOURCE,

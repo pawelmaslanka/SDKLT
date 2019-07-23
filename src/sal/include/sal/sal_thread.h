@@ -99,7 +99,7 @@
 
 /*! Default stack size for threads created via \ref sal_thread_create. */
 #ifndef SAL_THREAD_STKSZ
-#define	SAL_THREAD_STKSZ                16384
+#define	SAL_THREAD_STKSZ                524288
 #endif
 
 /*! Opaque thread handle. */
