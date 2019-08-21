@@ -366,6 +366,7 @@ soc_tomahawk_flex_end (
     LOG_DEBUG(BSL_LS_SOC_PORT,
               (BSL_META_U(unit, "Size of cookie = %d Bytes.\n"), sz));
     sal_free(port_schedule_state->cookie);
+    port_schedule_state->cookie = NULL;
     LOG_DEBUG(BSL_LS_SOC_PORT,
               (BSL_META_U(unit, "Cookie space deallocated.\n")));
 
@@ -375,6 +376,7 @@ soc_tomahawk_flex_end (
         for (j = 0; j < port_schedule_state->resource[i].num_lanes; j++) {
             if (port_schedule_state->resource[i].lane_info[j] != NULL) {
                 sal_free(port_schedule_state->resource[i].lane_info[j]);
+                port_schedule_state->resource[i].lane_info[j] = NULL;
                 LOG_DEBUG(BSL_LS_SOC_PORT, (BSL_META_U(unit,
                           "Lane information space deallocated.\n")));
             }
