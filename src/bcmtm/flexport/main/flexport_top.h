@@ -94,6 +94,7 @@
 
 #include <bsl/bsl.h>
 #include <sal/sal_sleep.h>
+#include <sal/sal_mutex.h>
 
 #include <bcmtm/bcmtm_types.h>
 

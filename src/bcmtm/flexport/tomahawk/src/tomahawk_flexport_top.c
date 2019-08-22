@@ -151,7 +151,6 @@ int (*flexport_phases[MAX_FLEX_PHASES]) (int unit, soc_port_schedule_state_t
     NULL                                     /* 24 */
 };
 
-
 /*! @fn void *soc_tomahawk_port_lane_info_alloc(void)
  *   @brief Allocates memory pointed to by soc_port_lane_info_t. Need this
  *          special function because SystemVerilog-C DPI limitations in
@@ -248,6 +247,20 @@ soc_tomahawk_reconfigure_ports (
     )
 {
     int i, j, rv;
+    static sal_mutex_t mtx = NULL;
+
+    // Only runs once
+    // TODO: make init thread-safe
+    if (!mtx) {
+        mtx = sal_mutex_create("Tomahawk port reconfiguration mutex");
+    }
+
+    if (sal_mutex_take(mtx, 1000 * 1000 /* us */)) {
+        LOG_ERROR(BSL_LS_SOC_PORT,
+                  (BSL_META_U(unit, "Port reconfiguration mutex could not be"
+                                    " taken within timeout. Deadlock?\n")));
+        return SOC_E_FAIL;
+    }
 
     if (LOG_CHECK(BSL_LS_SOC_PORT)) {
         LOG_DEBUG(BSL_LS_SOC_PORT,
@@ -303,13 +316,16 @@ soc_tomahawk_reconfigure_ports (
             rv = flexport_phases[i](unit, port_schedule_state);
             if (rv != SOC_E_NONE) {
                 sal_free(port_schedule_state->cookie);
+                port_schedule_state->cookie = NULL;
                 LOG_DEBUG(BSL_LS_SOC_PORT, (BSL_META_U(unit,
                           "Error encountered. Cookie space deallocated.\n")));
+                sal_mutex_give(mtx);
                 return rv;
             }
         }
     }
 
+    sal_mutex_give(mtx);
     return SOC_E_NONE;
 }
 
