@@ -103,6 +103,7 @@
 #include <errno.h>
 #include <unistd.h>
 #include <poll.h>
+#include <linux/filter.h>
 #include <linux/if.h>
 #include <linux/if_packet.h>
 #include <linux/if_ether.h>
@@ -602,6 +603,41 @@ exit:
 }
 
 static int
+bcmlu_tpacket_socket_install_filter(int sock_fd, bcmlu_tpacket_t *tp)
+{
+    // Set Berkeley Packet Filter (BPF) for the socket. The filters here are
+    // copied directly from Stratum. No need to change anything here.
+    const struct sock_filter filters[] = {
+        // 0. Retrieve "packet type" (see <netpacket/packet.h> for types) from
+        //    linux-specific magical negative offset
+        {0x28, 0, 0, 0xfffff004},
+        // 1. Branch if equal to 4 (PACKET_OUTGOING). Go to 2 if so, 3 otherwise.
+        {0x15, 0, 1, 0x00000004},
+        // 2. Return 0 (ignore packet)
+        {0x6, 0, 0, 0x00000000},
+        // 3. Return 65535 (capture entire packet)
+        {0x6, 0, 0, 0x0000ffff},
+    };
+    const struct sock_fprog fprog = {
+        sizeof(filters) / sizeof(filters[0]),
+        (struct sock_filter*) filters,
+    };
+
+    SHR_FUNC_ENTER(BSL_UNIT_UNKNOWN);
+    SHR_NULL_CHECK(tp, SHR_E_PARAM);
+
+    if (setsockopt(sock_fd, SOL_SOCKET, SO_ATTACH_FILTER, &fprog,
+                   sizeof(fprog)) < 0) {
+        SHR_IF_ERR_MSG_EXIT
+            (SHR_E_FAIL,
+             (BSL_META_U(tp->unit, "setsockopt SO_ATTACH_FILTER error\n")));
+    }
+
+exit:
+    SHR_FUNC_EXIT();
+}
+
+static int
 bcmlu_tpacket_socket_create(bcmlu_tpacket_t *tp)
 {
     int err;
@@ -646,6 +682,10 @@ bcmlu_tpacket_socket_create(bcmlu_tpacket_t *tp)
     LOG_VERBOSE(BSL_LOG_MODULE,
                 (BSL_META_U(tp->unit, "Open netif %s\n"), tp->netif.name));
 #endif
+
+    /*! Install BPF filter. */
+    SHR_IF_ERR_EXIT
+        (bcmlu_tpacket_socket_install_filter(sock_fd, tp));
 
     /*! Bind socket to the netif. */
     SHR_IF_ERR_EXIT
@@ -1043,6 +1083,7 @@ bcmlu_tpacket_packet_handle(bcmlu_tpacket_t *tp,
         data[17] == (rhdr->ethertype & 0xFF)) {
         if (data[18] != (rhdr->signature >> 8) ||
             data[19] != (rhdr->signature & 0xFF) ||
+//            data[20] != BCMPKT_RCPU_OP_TX ||
             data[20] != BCMPKT_RCPU_OP_RX ||
             data[21] != BCMPKT_RCPU_F_MODHDR) {
             ring->rcpu_hdr_err++;
