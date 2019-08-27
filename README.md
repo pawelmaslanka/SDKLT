@@ -1,3 +1,19 @@
+## This is the ONF maintained fork of SDKLT for use in [Stratum](https://github.com/opennetworkinglab/stratum)
+
+### List of changes
+
+ - Port Kernel modules to Kernel version 4.9 and 4.14
+
+ - Fix Makefile
+
+ - Fix action `ACTION_REDIRECT_TO_PORT` in table `FP_ING_POLICY_TEMPLATE`
+
+ - Increase default thread stack size from 16K (4K in some cases) to 512K
+
+ - Attach a BPF filter to ignore tx packets from other applications
+
+ - Fix various double-free errors, memory leaks and race conditions
+
 # SDKLT
 SDKLT (Logical Table Software Development Kit) is a new, powerful, and feature rich Software Development Kit for Broadcom switches. SDKLT provides a new approach to switch configuration using [Logical Tables](https://github.com/Broadcom-Network-Switching-Software/SDKLT/wiki/What-is-a-Logical-Table%3F).  The [Wiki](https://github.com/Broadcom-Network-Switching-Software/SDKLT/wiki) provides an [overview](https://github.com/Broadcom-Network-Switching-Software/SDKLT/wiki/Architecture-Overview) of SDKLT usage and its achitecture.  An architectural feature summary can be found [here](https://github.com/Broadcom-Network-Switching-Software/SDKLT/wiki/Architecture-Feature-Summary). 
 
