@@ -1076,7 +1076,20 @@ exit:
         SHR_FREE(edw);
     }
 
-   SHR_FUNC_EXIT();
+    for (int entry_type = 0; entry_type < BCMFP_ENTRY_TYPE_COUNT; entry_type++) {
+        for (int idx = 0; idx < BCMFP_ENTRY_PARTS_MAX; idx++) {
+            bcmfp_group_qual_offset_info_t *q_arr = &(fg.qual_arr[entry_type][idx]);
+
+            /* Free qualifiers arrays. */
+            SHR_FREE(q_arr->qid_arr);
+            SHR_FREE(q_arr->offset_arr);
+
+            /* Reset arrays size. */
+            q_arr->size = 0;
+        }
+    }
+
+    SHR_FUNC_EXIT();
 }
 
 int
