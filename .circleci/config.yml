@@ -73,7 +73,7 @@ jobs:
 
   build-3-16-56:
     docker:
-      - image: debian:testing
+      - image: debian:buster
     steps:
       - build-sdklt:
           kernel_version: "3.16.56"
