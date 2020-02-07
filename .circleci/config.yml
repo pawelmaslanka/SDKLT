@@ -16,10 +16,12 @@
 
 version: 2.1
 
-jobs:
-  build:
-    docker:
-      - image: debian:testing
+commands:
+  build-sdklt:
+    description: "Build SDKLT for a given Kernel version"
+    parameters:
+      kernel_version:
+        type: string
     steps:
       - run:
           name: Setup build environment
@@ -34,9 +36,9 @@ jobs:
           name: Get Kernel sources
           command: |
             pushd $HOME
-            wget https://github.com/opennetworkinglab/OpenNetworkLinux/releases/download/onlpv2-dev-1.0.1/linux-4.14.49-OpenNetworkLinux.tar.xz
-            tar xf linux-4.14.49-OpenNetworkLinux.tar.xz
-            rm linux-4.14.49-OpenNetworkLinux.tar.xz
+            wget https://github.com/opennetworkinglab/OpenNetworkLinux/releases/download/onlpv2-dev-1.0.1/linux-<< parameters.kernel_version >>-OpenNetworkLinux.tar.xz
+            tar xf linux-<< parameters.kernel_version >>-OpenNetworkLinux.tar.xz
+            rm linux-<< parameters.kernel_version >>-OpenNetworkLinux.tar.xz
             popd
       - checkout
       - run:
@@ -46,20 +48,35 @@ jobs:
           name: Build SDKLT
           command: |
             export ADD_CFLAGS="-fomit-frame-pointer -O3"
-            .circleci/build-sdklt.sh
-            mv ~/sdklt-4.14.49.tgz ~/build/sdklt-4.14.49.tgz
+            KERNEL_VERSION=<< parameters.kernel_version >> .circleci/build-sdklt.sh
+            mv ~/sdklt-<< parameters.kernel_version >>.tgz ~/build/sdklt-<< parameters.kernel_version >>.tgz
       - run:
           name: Build SDKLT debug
           command: |
             export ADD_CFLAGS="-g -fno-omit-frame-pointer -O0 -fsanitize=address"
             export ADD_LDFLAGS="-fsanitize=address"
-            .circleci/build-sdklt.sh
-            mv ~/sdklt-4.14.49.tgz ~/build/sdklt-debug-4.14.49.tgz
+            KERNEL_VERSION=<< parameters.kernel_version >> .circleci/build-sdklt.sh
+            mv ~/sdklt-<< parameters.kernel_version >>.tgz ~/build/sdklt-debug-<< parameters.kernel_version >>.tgz
       - persist_to_workspace:
           root: ~/build/
           paths:
-            - sdklt-4.14.49.tgz
-            - sdklt-debug-4.14.49.tgz
+            - sdklt-<< parameters.kernel_version >>.tgz
+            - sdklt-debug-<< parameters.kernel_version >>.tgz
+
+jobs:
+  build-4-14-49:
+    docker:
+      - image: debian:testing
+    steps:
+      - build-sdklt:
+          kernel_version: "4.14.49"
+
+  build-3-16-56:
+    docker:
+      - image: debian:testing
+    steps:
+      - build-sdklt:
+          kernel_version: "3.16.56"
 
   publish-github-release:
     docker:
@@ -89,16 +106,19 @@ workflows:
   version: 2
   sdklt:
     jobs:
-      - build
+      - build-4-14-49
+      - build-3-16-56
       - publish-github-release:
           requires:
-            - build
+            - build-4-14-49
+            - build-3-16-56
           filters:
             branches:
               only: master
       - publish-github-pre-release:
           requires:
-            - build
+            - build-4-14-49
+            - build-3-16-56
           filters:
             branches:
               ignore: master
