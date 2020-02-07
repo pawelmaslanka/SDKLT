@@ -27,10 +27,7 @@ commands:
           name: Setup build environment
           command: |
             apt update
-            apt install -y --no-install-recommends libyaml-dev python python-pip python-setuptools libelf-dev wget clang-8 gcc-9 make git ca-certificates ssh
-            update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 10
-            update-alternatives --install /usr/bin/clang clang /usr/bin/clang-8 10
-            update-alternatives --install /usr/bin/cc cc /usr/bin/clang 10
+            apt install -y --no-install-recommends libyaml-dev python python-pip python-setuptools libelf-dev wget make git ca-certificates ssh
             pip install pyyaml
       - run:
           name: Get Kernel sources
@@ -42,23 +39,23 @@ commands:
             popd
       - checkout
       - run:
-          name: Create build directory
-          command: mkdir -p ~/build
+          name: Create staging directory
+          command: mkdir -p ~/staging
       - run:
           name: Build SDKLT
           command: |
             export ADD_CFLAGS="-fomit-frame-pointer -O3"
             KERNEL_VERSION=<< parameters.kernel_version >> .circleci/build-sdklt.sh
-            mv ~/sdklt-<< parameters.kernel_version >>.tgz ~/build/sdklt-<< parameters.kernel_version >>.tgz
+            mv ~/sdklt-<< parameters.kernel_version >>.tgz ~/staging/sdklt-<< parameters.kernel_version >>.tgz
       - run:
           name: Build SDKLT debug
           command: |
             export ADD_CFLAGS="-g -fno-omit-frame-pointer -O0 -fsanitize=address"
             export ADD_LDFLAGS="-fsanitize=address"
             KERNEL_VERSION=<< parameters.kernel_version >> .circleci/build-sdklt.sh
-            mv ~/sdklt-<< parameters.kernel_version >>.tgz ~/build/sdklt-debug-<< parameters.kernel_version >>.tgz
+            mv ~/sdklt-<< parameters.kernel_version >>.tgz ~/staging/sdklt-debug-<< parameters.kernel_version >>.tgz
       - persist_to_workspace:
-          root: ~/build/
+          root: ~/staging/
           paths:
             - sdklt-<< parameters.kernel_version >>.tgz
             - sdklt-debug-<< parameters.kernel_version >>.tgz
@@ -68,13 +65,29 @@ jobs:
     docker:
       - image: debian:testing
     steps:
+      - run:
+          name: Setup compiler
+          command: |
+            apt update
+            apt install -y --no-install-recommends clang-8 gcc-9
+            update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 10
+            update-alternatives --install /usr/bin/clang clang /usr/bin/clang-8 10
+            update-alternatives --install /usr/bin/cc cc /usr/bin/clang 10
       - build-sdklt:
           kernel_version: "4.14.49"
 
   build-3-16-56:
     docker:
-      - image: debian:buster
+      - image: debian:stretch
     steps:
+      - run:
+          name: Setup compiler
+          command: |
+            apt update
+            apt install -y --no-install-recommends clang-4.0 gcc-6
+            update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-6 10
+            update-alternatives --install /usr/bin/clang clang /usr/bin/clang-4.0 10
+            update-alternatives --install /usr/bin/cc cc /usr/bin/clang 10
       - build-sdklt:
           kernel_version: "3.16.56"
 
