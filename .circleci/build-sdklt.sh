@@ -27,9 +27,14 @@ cd $SDK/appl/demo
 make TARGET_PLATFORM=xlr_linux clean -j
 make TARGET_PLATFORM=xlr_linux -j 2
 
-tar czf $HOME/sdklt-${KERNEL_VERSION}.tgz \
-  -C $SDKLT/src/appl/linux/build/xlr_linux/lkm/knet/ linux_ngknet.ko \
-  -C $SDKLT/src/appl/linux/build/xlr_linux/lkm/bde/ linux_ngbde.ko \
-  -C $SDKLT/src/appl/demo/build/xlr_linux/ sdklt \
-  -C $SDKLT/src/appl/sdklib/build/xlr_linux/ include/sdklt \
-  -C $SDKLT/src/appl/sdklib/build/xlr_linux/ lib/libsdklt.a lib/libsdklt.so
+TARFOLDER=mktemp -d
+
+cp $SDKLT/src/appl/linux/build/xlr_linux/lkm/knet/linux_ngknet.ko \
+   $SDKLT/src/appl/linux/build/xlr_linux/lkm/bde/linux_ngbde.ko \
+   $SDKLT/src/appl/demo/build/xlr_linux/sdklt \
+   $SDKLT/src/appl/sdklib/build/xlr_linux/include/sdklt \
+   $SDKLT/src/appl/sdklib/build/xlr_linux/lib/libsdklt.a \
+   $SDKLT/src/appl/sdklib/build/xlr_linux/lib/libsdklt.so \
+   ${TARFOLDER}
+
+tar czf $HOME/sdklt-${KERNEL_VERSION}.tgz ${TARFOLDER}
