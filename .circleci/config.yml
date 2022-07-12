@@ -48,7 +48,7 @@ jobs:
       - run:
           name: Build SDKLT
           command: |
-            export ADD_CFLAGS="-fomit-frame-pointer -O3"
+            export ADD_CFLAGS="-O3"
             .circleci/build-sdklt.sh
             mv ~/sdklt-4.14.0.tgz ~/build/sdklt-4.14.0.tgz
       - run:
