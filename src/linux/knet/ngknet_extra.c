@@ -431,31 +431,16 @@ ngknet_rx_pkt_filter(struct ngknet_dev *dev, struct sk_buff *skb, struct net_dev
 #if LINUX_VERSION_CODE < KERNEL_VERSION(4,14,0)
 static void
 ngknet_rl_process(unsigned long data)
-{
-    struct ngknet_rl_ctrl *rc = (struct ngknet_rl_ctrl *)data;
-    struct ngknet_dev *dev;
-    unsigned long flags;
-    int idx;
-
-    spin_lock_irqsave(&rc->lock, flags);
-    rc->rx_pkts = 0;
-    for (idx = 0; idx < NUM_PDMA_DEV_MAX; idx++) {
-        dev = &rc->devs[idx];
-        if (rc->dev_active[idx] && rc->dev_paused[idx]) {
-            bcmcnet_pdma_dev_rx_resume(&dev->pdma_dev);
-            rl_ctrl.dev_paused[dev->dev_no] = 0;
-        }
-    }
-    spin_unlock_irqrestore(&rc->lock, flags);
-
-    rc->timer.expires = jiffies + HZ / rc->rx_ticks;
-    add_timer(&rc->timer);
-}
 #else
 static void
 ngknet_rl_process(struct timer_list *t)
+#endif
 {
+#if LINUX_VERSION_CODE < KERNEL_VERSION(4,14,0)
+    struct ngknet_rl_ctrl *rc = (struct ngknet_rl_ctrl *)data;
+#else
     struct ngknet_rl_ctrl *rc = from_timer(rc, t, timer);
+#endif
     struct ngknet_dev *dev;
     unsigned long flags;
     int idx;
@@ -474,7 +459,6 @@ ngknet_rl_process(struct timer_list *t)
     rc->timer.expires = jiffies + HZ / rc->rx_ticks;
     add_timer(&rc->timer);
 }
-#endif
 
 void
 ngknet_rx_rate_limit_init(struct ngknet_dev *devs)
@@ -485,11 +469,11 @@ ngknet_rx_rate_limit_init(struct ngknet_dev *devs)
     init_timer(&rl_ctrl.timer);
     rl_ctrl.timer.data = (unsigned long)&rl_ctrl;
     rl_ctrl.timer.function = ngknet_rl_process;
-    spin_lock_init(&rl_ctrl.lock);
-    rl_ctrl.devs = devs;
 #else
     timer_setup(&rl_ctrl.timer, ngknet_rl_process, 0);
 #endif
+    spin_lock_init(&rl_ctrl.lock);
+    rl_ctrl.devs = devs;
 }
 
 void
