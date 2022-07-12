@@ -33,11 +33,14 @@ jobs:
       - run:
           name: Get Kernel sources
           command: |
-            pushd $HOME
-            wget https://github.com/opennetworkinglab/OpenNetworkLinux/releases/download/onlpv2-dev-1.0.1/linux-4.14.49-OpenNetworkLinux.tar.xz
-            tar xf linux-4.14.49-OpenNetworkLinux.tar.xz
-            rm linux-4.14.49-OpenNetworkLinux.tar.xz
-            popd
+            wget --quiet -O $HOME/linux-headers-4.19.0-12-2-common.deb "$SONIC_KERNEL_HEADER_URL_COMMON"
+            wget --quiet -O $HOME/linux-headers-4.19.0-12-2-amd64.deb "$SONIC_KERNEL_HEADER_URL_AMD64"
+            apt-get install -y --no-install-recommends $HOME/linux-headers-4.19.0-12-2-common.deb
+            apt-get install -y --no-install-recommends $HOME/linux-headers-4.19.0-12-2-amd64.deb
+            rm $HOME/linux-headers-4.19.0-12-2-common.deb $HOME/linux-headers-4.19.0-12-2-amd64.deb
+            mkdir /usr/src/linux-headers-4.19.0-12-2-merged
+            rsync -ahPL /usr/src/linux-headers-4.19.0-12-2-common/ /usr/src/linux-headers-4.19.0-12-2-merged
+            rsync -ahPL /usr/src/linux-headers-4.19.0-12-2-amd64/ /usr/src/linux-headers-4.19.0-12-2-merged
       - checkout
       - run:
           name: Create build directory
@@ -47,19 +50,19 @@ jobs:
           command: |
             export ADD_CFLAGS="-fomit-frame-pointer -O3"
             .circleci/build-sdklt.sh
-            mv ~/sdklt-4.14.49.tgz ~/build/sdklt-4.14.49.tgz
+            mv ~/sdklt-4.14.0.tgz ~/build/sdklt-4.14.0.tgz
       - run:
           name: Build SDKLT debug
           command: |
             export ADD_CFLAGS="-g -fno-omit-frame-pointer -O0 -fsanitize=address"
             export ADD_LDFLAGS="-fsanitize=address"
             .circleci/build-sdklt.sh
-            mv ~/sdklt-4.14.49.tgz ~/build/sdklt-debug-4.14.49.tgz
+            mv ~/sdklt-4.14.0.tgz ~/build/sdklt-debug-4.14.0.tgz
       - persist_to_workspace:
           root: ~/build/
           paths:
-            - sdklt-4.14.49.tgz
-            - sdklt-debug-4.14.49.tgz
+            - sdklt-4.14.0.tgz
+            - sdklt-debug-4.14.0.tgz
 
   publish-github-release:
     docker:
