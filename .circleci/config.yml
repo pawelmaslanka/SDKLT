@@ -25,19 +25,19 @@ jobs:
           name: Setup build environment
           command: |
             apt update
-            apt install -y --no-install-recommends libyaml-dev python python-pip python-setuptools libelf-dev wget clang-8 gcc-9 make git ca-certificates ssh
-            update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 10
-            update-alternatives --install /usr/bin/clang clang /usr/bin/clang-8 10
+            apt install -y --no-install-recommends libyaml-dev python python-pip python-setuptools libelf-dev wget clang-7 gcc-8 make git ca-certificates ssh rsync
+            update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 10
+            update-alternatives --install /usr/bin/clang clang /usr/bin/clang-7 10
             update-alternatives --install /usr/bin/cc cc /usr/bin/clang 10
             pip install pyyaml
       - run:
           name: Get Kernel sources
           command: |
-            wget --quiet -O $HOME/linux-headers-4.19.0-12-2-common.deb "$SONIC_KERNEL_HEADER_URL_COMMON"
-            wget --quiet -O $HOME/linux-headers-4.19.0-12-2-amd64.deb "$SONIC_KERNEL_HEADER_URL_AMD64"
-            apt-get install -y --no-install-recommends $HOME/linux-headers-4.19.0-12-2-common.deb
-            apt-get install -y --no-install-recommends $HOME/linux-headers-4.19.0-12-2-amd64.deb
-            rm $HOME/linux-headers-4.19.0-12-2-common.deb $HOME/linux-headers-4.19.0-12-2-amd64.deb
+            wget --quiet -O ~/linux-headers-4.19.0-12-2-common.deb "https://sonic-build.azurewebsites.net/api/sonic/artifacts?branchName=202106&platform=barefoot&buildId=116439&target=target%2Fdebs%2Fbuster%2Flinux-headers-4.19.0-12-2-common_4.19.152-1_all.deb"
+            wget --quiet -O ~/linux-headers-4.19.0-12-2-amd64.deb "https://sonic-build.azurewebsites.net/api/sonic/artifacts?branchName=202106&platform=barefoot&buildId=116439&target=target%2Fdebs%2Fbuster%2Flinux-headers-4.19.0-12-2-amd64_4.19.152-1_amd64.deb"
+            apt-get install -y --no-install-recommends ~/linux-headers-4.19.0-12-2-common.deb
+            apt-get install -y --no-install-recommends ~/linux-headers-4.19.0-12-2-amd64.deb
+            rm ~/linux-headers-4.19.0-12-2-common.deb ~/linux-headers-4.19.0-12-2-amd64.deb
             mkdir /usr/src/linux-headers-4.19.0-12-2-merged
             rsync -ahPL /usr/src/linux-headers-4.19.0-12-2-common/ /usr/src/linux-headers-4.19.0-12-2-merged
             rsync -ahPL /usr/src/linux-headers-4.19.0-12-2-amd64/ /usr/src/linux-headers-4.19.0-12-2-merged
