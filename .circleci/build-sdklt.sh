@@ -26,7 +26,7 @@ cd $SDK/appl/demo
 make TARGET_PLATFORM=xlr_linux clean -j
 make TARGET_PLATFORM=xlr_linux -j 4
 
-tar czf $HOME/sdklt-4.14.0.tgz \
+tar czf $HOME/sdklt-4.19.0.tgz \
   -C $SDKLT/src/appl/linux/build/xlr_linux/lkm/knet/ linux_ngknet.ko \
   -C $SDKLT/src/appl/linux/build/xlr_linux/lkm/bde/ linux_ngbde.ko \
   -C $SDKLT/src/appl/demo/build/xlr_linux/ sdklt \

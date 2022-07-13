@@ -50,19 +50,19 @@ jobs:
           command: |
             export ADD_CFLAGS="-O3"
             .circleci/build-sdklt.sh
-            mv ~/sdklt-4.14.0.tgz ~/build/sdklt-4.14.0.tgz
+            mv ~/sdklt-4.19.0.tgz ~/build/sdklt-4.19.0.tgz
       - run:
           name: Build SDKLT debug
           command: |
             export ADD_CFLAGS="-g -fno-omit-frame-pointer -O0 -fsanitize=address"
             export ADD_LDFLAGS="-fsanitize=address"
             .circleci/build-sdklt.sh
-            mv ~/sdklt-4.14.0.tgz ~/build/sdklt-debug-4.14.0.tgz
+            mv ~/sdklt-4.19.0.tgz ~/build/sdklt-debug-4.19.0.tgz
       - persist_to_workspace:
           root: ~/build/
           paths:
-            - sdklt-4.14.0.tgz
-            - sdklt-debug-4.14.0.tgz
+            - sdklt-4.19.0.tgz
+            - sdklt-debug-4.19.0.tgz
 
   publish-github-release:
     docker:
