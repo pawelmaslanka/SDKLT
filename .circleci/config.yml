@@ -19,25 +19,28 @@ version: 2.1
 jobs:
   build:
     docker:
-      - image: debian:testing
+      - image: debian:buster
     steps:
       - run:
           name: Setup build environment
           command: |
             apt update
-            apt install -y --no-install-recommends libyaml-dev python python-pip python-setuptools libelf-dev wget clang-8 gcc-9 make git ca-certificates ssh
-            update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-9 10
-            update-alternatives --install /usr/bin/clang clang /usr/bin/clang-8 10
+            apt install -y --no-install-recommends libyaml-dev python python-pip python-setuptools libelf-dev wget clang-7 gcc-8 make git ca-certificates ssh rsync
+            update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-8 10
+            update-alternatives --install /usr/bin/clang clang /usr/bin/clang-7 10
             update-alternatives --install /usr/bin/cc cc /usr/bin/clang 10
             pip install pyyaml
       - run:
           name: Get Kernel sources
           command: |
-            pushd $HOME
-            wget https://github.com/opennetworkinglab/OpenNetworkLinux/releases/download/onlpv2-dev-1.0.1/linux-4.14.49-OpenNetworkLinux.tar.xz
-            tar xf linux-4.14.49-OpenNetworkLinux.tar.xz
-            rm linux-4.14.49-OpenNetworkLinux.tar.xz
-            popd
+            wget --quiet -O ~/linux-headers-4.19.0-12-2-common.deb "https://sonic-build.azurewebsites.net/api/sonic/artifacts?branchName=202106&platform=barefoot&buildId=116439&target=target%2Fdebs%2Fbuster%2Flinux-headers-4.19.0-12-2-common_4.19.152-1_all.deb"
+            wget --quiet -O ~/linux-headers-4.19.0-12-2-amd64.deb "https://sonic-build.azurewebsites.net/api/sonic/artifacts?branchName=202106&platform=barefoot&buildId=116439&target=target%2Fdebs%2Fbuster%2Flinux-headers-4.19.0-12-2-amd64_4.19.152-1_amd64.deb"
+            apt-get install -y --no-install-recommends ~/linux-headers-4.19.0-12-2-common.deb
+            apt-get install -y --no-install-recommends ~/linux-headers-4.19.0-12-2-amd64.deb
+            rm ~/linux-headers-4.19.0-12-2-common.deb ~/linux-headers-4.19.0-12-2-amd64.deb
+            mkdir /usr/src/linux-headers-4.19.0-12-2-merged
+            rsync -ahPL /usr/src/linux-headers-4.19.0-12-2-common/ /usr/src/linux-headers-4.19.0-12-2-merged
+            rsync -ahPL /usr/src/linux-headers-4.19.0-12-2-amd64/ /usr/src/linux-headers-4.19.0-12-2-merged
       - checkout
       - run:
           name: Create build directory
@@ -45,21 +48,21 @@ jobs:
       - run:
           name: Build SDKLT
           command: |
-            export ADD_CFLAGS="-fomit-frame-pointer -O3"
+            export ADD_CFLAGS="-O3"
             .circleci/build-sdklt.sh
-            mv ~/sdklt-4.14.49.tgz ~/build/sdklt-4.14.49.tgz
+            mv ~/sdklt-4.14.0.tgz ~/build/sdklt-4.14.0.tgz
       - run:
           name: Build SDKLT debug
           command: |
             export ADD_CFLAGS="-g -fno-omit-frame-pointer -O0 -fsanitize=address"
             export ADD_LDFLAGS="-fsanitize=address"
             .circleci/build-sdklt.sh
-            mv ~/sdklt-4.14.49.tgz ~/build/sdklt-debug-4.14.49.tgz
+            mv ~/sdklt-4.14.0.tgz ~/build/sdklt-debug-4.14.0.tgz
       - persist_to_workspace:
           root: ~/build/
           paths:
-            - sdklt-4.14.49.tgz
-            - sdklt-debug-4.14.49.tgz
+            - sdklt-4.14.0.tgz
+            - sdklt-debug-4.14.0.tgz
 
   publish-github-release:
     docker:
@@ -71,7 +74,7 @@ jobs:
           name: "Publish Release on GitHub"
           command: |
             go get -u github.com/tcnksm/ghr
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete r${CIRCLE_BUILD_NUM} ./artifacts/
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -replace r${CIRCLE_BUILD_NUM} ./artifacts/
 
   publish-github-pre-release:
     docker:
@@ -83,7 +86,7 @@ jobs:
           name: "Publish Release on GitHub"
           command: |
             go get -u github.com/tcnksm/ghr
-            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -delete -prerelease ${CIRCLE_BRANCH} ./artifacts/
+            ghr -t ${GITHUB_TOKEN} -u ${CIRCLE_PROJECT_USERNAME} -r ${CIRCLE_PROJECT_REPONAME} -c ${CIRCLE_SHA1} -replace -prerelease dev-${CIRCLE_BRANCH} ./artifacts/
 
 workflows:
   version: 2
